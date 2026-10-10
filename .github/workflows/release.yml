@@ -18,7 +18,9 @@ permissions:
 
 jobs:
   build-release:
-    runs-on: windows-latest
+    # Pin to the VS2022 image: OpenCV's prebuilt Windows pack ships vc16
+    # binaries, which windows-latest (now VS2026 / vc17+) does not match.
+    runs-on: windows-2022
 
     env:
       OPENCV_VERSION: "4.10.0"
@@ -71,9 +73,9 @@ jobs:
         shell: pwsh
         run: |
           cmake -S . -B build `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_POLICY_VERSION_MINIMUM=3.5 `
-            -DOpenCV_DIR="$env:OPENCV_ROOT\opencv\build"
+            -G "Visual Studio 17 2022" -A x64 `
+            "-DCMAKE_POLICY_VERSION_MINIMUM=3.5" `
+            "-DOpenCV_DIR=$env:OPENCV_ROOT\opencv\build"
 
       - name: Build (Release)
         shell: pwsh
