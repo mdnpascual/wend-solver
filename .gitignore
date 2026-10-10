@@ -1,0 +1,75 @@
+# ── Build output ──────────────────────────────────────────────────────────────
+/build/
+build*/
+cmake-build-*/
+out/
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+compile_commands.json
+_deps/
+
+# ── Compiled objects / binaries ────────────────────────────────────────────────
+*.obj
+*.o
+*.a
+*.lib
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.exp
+*.so
+*.dylib
+
+# ── Visual Studio / MSBuild ─────────────────────────────────────────────────────
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+.vs/
+*.VC.db
+*.VC.opendb
+
+# ── Dependencies fetched by CMake FetchContent at configure time ────────────────
+# (ImGui, GLFW, glad land under build/_deps, but ignore these if they ever appear here)
+third_party/glfw/
+third_party/imgui/
+third_party/glad/
+# NOTE: third_party/english-words is a git submodule and is intentionally tracked.
+
+# ── Python tooling (tools/) ─────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.ipynb_checkpoints/
+
+# ── Word list ───────────────────────────────────────────────────────────────────
+# Sourced from the third_party/english-words submodule and copied next to the
+# executable at build time; not committed to this repo.
+assets/words.txt
+
+# ── Generated image / OCR debug artifacts in tools/ ─────────────────────────────
+tools/ocr_fail/
+tools/ocr_glyphs/
+tools/seg2_A/
+tools/seg2_B/
+tools/seg_out_5x5/
+tools/seg_out_6x6/
+tools/*.png
+
+# ── IDE / editor ────────────────────────────────────────────────────────────────
+.idea/
+*.swp
+*~
+
+# ── OS cruft ────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,70 @@
+# Expected reconciled grids for the clipboard-import integration test.
+#
+# Format:
+#   - Blank lines and lines starting with '#' are ignored.
+#   - A line beginning with '@' names the image file (relative to the
+#     sample_inputs dir passed to the test), e.g.  @Screenshot 2026-09-26 082703.png
+#   - The following lines (until the next '@' or EOF) are that board's rows,
+#     one row per line: an uppercase letter for a letter cell, and '.' for a
+#     hole/empty cell. The row count and each row's length must equal N.
+#
+# These grids are hand-verified against the screenshots in sample_inputs/.
+# Add a new @block here when you add a new sample image.
+
+@Screenshot 2026-09-22 070256.png
+ERERE
+TUTAT
+X.I.R
+E.L.I
+TELIX
+
+@Screenshot 2026-09-23 173824.png
+VARCH
+IRO.K
+ASCIC
+B.THO
+LENEP
+
+@Screenshot 2026-09-24 101711.png
+QE..SL
+USPANE
+EN..AL
+EC..BL
+CSPANE
+RI..IR
+
+@Screenshot 2026-09-25 112800.png
+WE...ND
+.AVEDE.
+.NTOIV.
+.EIRYI.
+.VNOSD.
+.INCTU.
+GA...ME
+
+@Screenshot 2026-09-26 082703.png
+EMI.CPI
+POC.ITC
+GCR.TUC
+RSOOPRI
+AP...EN
+SH.CITE
+CI...AM
+
+
+@Screenshot 2026-09-27 010811.png
+.IRMRH.
+QUEMOCO
+SUM.MON
+IM...ME
+XAM.MEN
+YTUMBRA
+.INMOC.
+
+
+@Screenshot 2026-09-28 010154.png
+T.E.A
+SELIG
+.TEE.
+ONSSO
+C.U.P
