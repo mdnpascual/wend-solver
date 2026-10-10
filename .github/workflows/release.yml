@@ -1,0 +1,119 @@
+name: Release
+
+# Manual-only by default: run from the Actions tab via "Run workflow",
+# or by pushing a version tag like v1.0.0.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version tag (e.g. v1.0.0)"
+        required: true
+        default: "v0.1.0"
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # needed to create a GitHub Release
+
+jobs:
+  build-release:
+    runs-on: windows-latest
+
+    env:
+      OPENCV_VERSION: "4.10.0"
+      # DLL/lib suffix derived from the version: 4.10.0 -> 4100
+      OPENCV_SUFFIX: "4100"
+      # Where we extract the prebuilt OpenCV SDK on the runner.
+      OPENCV_ROOT: "C:\\opencv"
+
+    steps:
+      - name: Check out repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Determine version
+        id: ver
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "push") {
+            $v = "${{ github.ref_name }}"
+          } else {
+            $v = "${{ github.event.inputs.version }}"
+          }
+          echo "version=$v" >> $env:GITHUB_OUTPUT
+          echo "Release version: $v"
+
+      - name: Cache OpenCV SDK
+        id: cache-opencv
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.OPENCV_ROOT }}
+          key: opencv-${{ env.OPENCV_VERSION }}-windows
+
+      - name: Download & extract OpenCV ${{ env.OPENCV_VERSION }}
+        if: steps.cache-opencv.outputs.cache-hit != 'true'
+        shell: pwsh
+        run: |
+          $url = "https://github.com/opencv/opencv/releases/download/${{ env.OPENCV_VERSION }}/opencv-${{ env.OPENCV_VERSION }}-windows.exe"
+          Write-Host "Downloading $url"
+          Invoke-WebRequest -Uri $url -OutFile "$env:RUNNER_TEMP\opencv.exe"
+          # The Windows release is a self-extracting 7-zip archive.
+          # -o sets the output dir, -y auto-confirms; it creates an "opencv" folder.
+          Start-Process -FilePath "$env:RUNNER_TEMP\opencv.exe" `
+            -ArgumentList "-o`"$env:OPENCV_ROOT`" -y" -Wait -NoNewWindow
+          if (-not (Test-Path "$env:OPENCV_ROOT\opencv\build\x64\vc16\bin\opencv_world${{ env.OPENCV_SUFFIX }}.dll")) {
+            throw "OpenCV DLL not found after extraction; archive layout may have changed."
+          }
+
+      - name: Configure (CMake)
+        shell: pwsh
+        run: |
+          cmake -S . -B build `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DOpenCV_DIR="$env:OPENCV_ROOT\opencv\build"
+
+      - name: Build (Release)
+        shell: pwsh
+        run: cmake --build build --config Release --parallel
+
+      - name: Verify build output
+        shell: pwsh
+        run: |
+          $exe = "build\Release\wend_solver.exe"
+          $words = "build\Release\assets\words.txt"
+          $dll = "build\Release\opencv_world${{ env.OPENCV_SUFFIX }}.dll"
+          foreach ($f in @($exe, $words, $dll)) {
+            if (-not (Test-Path $f)) { throw "Expected build artifact missing: $f" }
+          }
+          Write-Host "words.txt lines: $((Get-Content $words | Measure-Object -Line).Lines)"
+
+      - name: Package release zip
+        id: package
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.ver.outputs.version }}"
+          $stage = "wend_solver-$ver-windows-x64"
+          New-Item -ItemType Directory -Path $stage | Out-Null
+          # The POST_BUILD steps already placed exe, assets\ (incl. words.txt),
+          # and the OpenCV DLL together in build\Release.
+          Copy-Item "build\Release\wend_solver.exe"               "$stage\"
+          Copy-Item "build\Release\opencv_world${{ env.OPENCV_SUFFIX }}.dll" "$stage\"
+          Copy-Item "build\Release\assets" "$stage\assets" -Recurse
+          Copy-Item "README.md"  "$stage\"
+          Copy-Item "BUILD.md"   "$stage\"
+          $zip = "$stage.zip"
+          Compress-Archive -Path "$stage\*" -DestinationPath $zip -Force
+          echo "zip=$zip" >> $env:GITHUB_OUTPUT
+          echo "stage=$stage" >> $env:GITHUB_OUTPUT
+
+      - name: Create GitHub Release and upload asset
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.version }}
+          name: Wend Solver ${{ steps.ver.outputs.version }}
+          generate_release_notes: true
+          files: ${{ steps.package.outputs.zip }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
