@@ -9,6 +9,8 @@ Built with Dear ImGui + GLFW/OpenGL. Includes a clipboard-import feature: paste 
 screenshot of a puzzle (**Ctrl+V**) and the grid auto-fills via OpenCV board
 detection plus a local vision-language model for letter reading.
 
+![Wend Solver reading a puzzle from a screenshot and displaying solutions](docs/wend_demo_screenshot.jpg)
+
 ## Features
 - 15×15 interactive grid editor (click, type, arrow keys, Del/Esc).
 - Min/max word-length and comma-separated word-length hint inputs
@@ -23,7 +25,7 @@ LM Studio) and commands. This repo uses a git submodule for the word list, so
 clone recursively:
 
 ```powershell
-git clone --recurse-submodules <repo-url>
+git clone --recurse-submodules https://github.com/mdnpascual/wend-solver.git
 # already cloned? run: git submodule update --init --recursive
 ```
 
